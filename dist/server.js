@@ -1,14 +1,17 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import bodyParser from 'body-parser';
 import multer from 'multer';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs'
 import sharp from 'sharp';
 import jwtoken from 'jsonwebtoken';
+import CustomConsole from "./utils/customConsole.js";
 
-const storage = multer.diskStorage({
+// Configuración de Multer para un archivo
+const storageSingle = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
   },
@@ -17,7 +20,52 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+// Filtro para validar el campo esperado y el tipo de archivo
+const fileFilterSingle  = (req, file, cb) => {
+  CustomConsole({origin: 'fileFilterSingle', info: file})
+  // Validar que el campo del archivo sea del nombre esperado
+  if (file.fieldname !== 'image') { 
+    return cb(new Error('El campo del archivo no es válido.'), false);
+  }
+  // validar un campo especifico del formulario que sea requerido
+  // if (!req.body || !req.body.image) {
+  //   return cb(new Error('Campo de imagen no encontrado en la solicitud'));
+  // }
+  // if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+  //   return cb(new Error('Solo se aceptan imágenes'));
+  // }
+  cb(null, true);
+};
+
+
+const uploadSingle = multer({ storage: storageSingle, fileFilter: fileFilterSingle });
+
+// Configuración de Multer para múltiples archivos (Max. 5 archivos)
+const storageMultiple = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+// Filtro para validar el campo esperado y el tipo de archivo
+const fileFilterMultiple = (req, file, cb) => {
+  if (!req.body || !req.body.image) {
+    return cb(new Error('No image field found in the request'));
+  }
+  // if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+  //   return cb(new Error('Solo se aceptan imágenes'));
+  // }
+  cb(null, true);
+};
+
+const uploadMultiple = multer({
+  storage: storageMultiple,
+  fileFilter: fileFilterMultiple,
+  limits: { files: 5 },
+});
 
 const { verify, sign } = jwtoken;
 
@@ -26,17 +74,9 @@ const app = express();
 app.use(cors());
 
 // Middleware para analizar el cuerpo de la solicitud
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
-// Middleware personalizado para verificar el campo esperado
-const validateField = (fieldName) => (req, res, next) => {
-  console.log(req.body.file)
-  if (!req.body[fieldName]) {
-    return res.status(400).send({ error: `El campo ${fieldName} no existe` });
-  }
-  next();
-};
 
 // middleware para verificar el token de acceso
 function verifyToken(req, res, next) {
@@ -78,7 +118,7 @@ app.post('/api/auth', (req, res) => {
 });
 
 // ruta para subir una imagen y guardarla en tres tamaños diferentes
-app.post('/api/images', verifyToken, upload.single('image'), async (req, res) => {
+app.post('/api/images/single', verifyToken, uploadSingle.single('image'), async (req, res) => {
   // Verificar si se ha enviado un archivo
   if (!req.file) {
     return res.status(400).send('No se ha enviado un archivo.');
@@ -117,6 +157,49 @@ app.post('/api/images', verifyToken, upload.single('image'), async (req, res) =>
   fs.unlinkSync(req.file.path);
 });
 
+// ruta para subir multiples imagenes y guardarla en tres tamaños diferentes (Max. 5 Archivos)
+app.post('/api/images/multiple', verifyToken, uploadMultiple.array('image', 5), async (req, res) => {
+  // Verificar si se ha enviado algún archivo
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).send('No se han enviado archivos.');
+  }
+
+  // Procesar archivos y crear versiones en diferentes tamaños
+  const filenames = req.files.map(file => file.filename);
+
+  try {
+    for (const file of req.files) {
+      // crear la imagen original
+      await sharp(file.path)
+        .jpeg({ quality: 80 })
+        .toFile(`uploads/${file.filename}-original.jpg`);
+
+      // crear la imagen de tamaño mediano
+      await sharp(file.path)
+        .resize({ width: 640 })
+        .jpeg({ quality: 80 })
+        .toFile(`uploads/${file.filename}-medium.jpg`);
+
+      // crear la imagen de tamaño thumbnail
+      await sharp(file.path)
+        .resize({ width: 160 })
+        .jpeg({ quality: 80 })
+        .toFile(`uploads/${file.filename}-thumb.jpg`);
+
+      // eliminar el archivo subido
+      fs.unlinkSync(file.path);
+    }
+
+    // responder con un mensaje de éxito
+    res.json({ message: 'Las imágenes se han subido y procesado correctamente.', filenames: filenames });
+  } catch (err) {
+    // responder con un error si ocurre algún problema
+    console.error(err);
+    res.status(500).json({ message: 'Ocurrió un error al procesar las imágenes.' });
+  }
+});
+
+
 // ruta para obtener una imagen en un tamaño específico
 app.get('/api/images/:id', verifyToken, async (req, res) => {
   const { id } = req.params;
@@ -141,6 +224,11 @@ app.get('/api/images/:id', verifyToken, async (req, res) => {
     console.error(err);
     res.status(404).json({ message: 'La imagen solicitada no existe.' });
   }
+});
+
+// verificación de ruta no encontrada
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Ruta no encontrada' });
 });
 
 // iniciar el servidor
