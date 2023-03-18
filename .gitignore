@@ -1,0 +1,10 @@
+# Ignorar archivos generados por Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Ignorar los archivos de carga de ambiente
+.env
+
+# Ignorar los archivos generados por la biblioteca sharp
+uploads/
