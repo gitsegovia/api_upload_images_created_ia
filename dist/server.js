@@ -52,9 +52,14 @@ const storageMultiple = multer.diskStorage({
 
 // Filtro para validar el campo esperado y el tipo de archivo
 const fileFilterMultiple = (req, file, cb) => {
-  if (!req.body || !req.body.image) {
-    return cb(new Error('No image field found in the request'));
+  CustomConsole({origin: 'fileFilterMultiple', info: file})
+  // Validar que el campo del archivo sea del nombre esperado
+  if (file.fieldname !== 'image') { 
+    return cb(new Error('El campo del archivo no es válido.'), false);
   }
+  // if (!req.body || !req.body.image) {
+  //   return cb(new Error('No image field found in the request'));
+  // }
   // if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
   //   return cb(new Error('Solo se aceptan imágenes'));
   // }
