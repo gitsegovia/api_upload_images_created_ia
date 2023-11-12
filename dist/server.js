@@ -1,243 +1,132 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-import express from 'express';
-import bodyParser from 'body-parser';
-import multer from 'multer';
-import cors from 'cors';
-import path from 'path';
-import fs from 'fs'
-import sharp from 'sharp';
-import jwtoken from 'jsonwebtoken';
-import CustomConsole from "./utils/customConsole.js";
+"use strict";
 
-// Configuración de Multer para un archivo
-const storageSingle = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var _express = _interopRequireDefault(require("express"));
+var _path = _interopRequireDefault(require("path"));
+var _bodyParser = _interopRequireDefault(require("body-parser"));
+var _multer = _interopRequireDefault(require("multer"));
+var _fs = _interopRequireDefault(require("fs"));
+var _url = require("url");
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return exports; }; var exports = {}, Op = Object.prototype, hasOwn = Op.hasOwnProperty, defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; }, $Symbol = "function" == typeof Symbol ? Symbol : {}, iteratorSymbol = $Symbol.iterator || "@@iterator", asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator", toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag"; function define(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: !0, configurable: !0, writable: !0 }), obj[key]; } try { define({}, ""); } catch (err) { define = function define(obj, key, value) { return obj[key] = value; }; } function wrap(innerFn, outerFn, self, tryLocsList) { var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator, generator = Object.create(protoGenerator.prototype), context = new Context(tryLocsList || []); return defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) }), generator; } function tryCatch(fn, obj, arg) { try { return { type: "normal", arg: fn.call(obj, arg) }; } catch (err) { return { type: "throw", arg: err }; } } exports.wrap = wrap; var ContinueSentinel = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var IteratorPrototype = {}; define(IteratorPrototype, iteratorSymbol, function () { return this; }); var getProto = Object.getPrototypeOf, NativeIteratorPrototype = getProto && getProto(getProto(values([]))); NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype); var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype); function defineIteratorMethods(prototype) { ["next", "throw", "return"].forEach(function (method) { define(prototype, method, function (arg) { return this._invoke(method, arg); }); }); } function AsyncIterator(generator, PromiseImpl) { function invoke(method, arg, resolve, reject) { var record = tryCatch(generator[method], generator, arg); if ("throw" !== record.type) { var result = record.arg, value = result.value; return value && "object" == _typeof(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) { invoke("next", value, resolve, reject); }, function (err) { invoke("throw", err, resolve, reject); }) : PromiseImpl.resolve(value).then(function (unwrapped) { result.value = unwrapped, resolve(result); }, function (error) { return invoke("throw", error, resolve, reject); }); } reject(record.arg); } var previousPromise; defineProperty(this, "_invoke", { value: function value(method, arg) { function callInvokeWithMethodAndArg() { return new PromiseImpl(function (resolve, reject) { invoke(method, arg, resolve, reject); }); } return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(innerFn, self, context) { var state = "suspendedStart"; return function (method, arg) { if ("executing" === state) throw new Error("Generator is already running"); if ("completed" === state) { if ("throw" === method) throw arg; return doneResult(); } for (context.method = method, context.arg = arg;;) { var delegate = context.delegate; if (delegate) { var delegateResult = maybeInvokeDelegate(delegate, context); if (delegateResult) { if (delegateResult === ContinueSentinel) continue; return delegateResult; } } if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) { if ("suspendedStart" === state) throw state = "completed", context.arg; context.dispatchException(context.arg); } else "return" === context.method && context.abrupt("return", context.arg); state = "executing"; var record = tryCatch(innerFn, self, context); if ("normal" === record.type) { if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue; return { value: record.arg, done: context.done }; } "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg); } }; } function maybeInvokeDelegate(delegate, context) { var methodName = context.method, method = delegate.iterator[methodName]; if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel; var record = tryCatch(method, delegate.iterator, context.arg); if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel; var info = record.arg; return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel); } function pushTryEntry(locs) { var entry = { tryLoc: locs[0] }; 1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry); } function resetTryEntry(entry) { var record = entry.completion || {}; record.type = "normal", delete record.arg, entry.completion = record; } function Context(tryLocsList) { this.tryEntries = [{ tryLoc: "root" }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0); } function values(iterable) { if (iterable) { var iteratorMethod = iterable[iteratorSymbol]; if (iteratorMethod) return iteratorMethod.call(iterable); if ("function" == typeof iterable.next) return iterable; if (!isNaN(iterable.length)) { var i = -1, next = function next() { for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next; return next.value = undefined, next.done = !0, next; }; return next.next = next; } } return { next: doneResult }; } function doneResult() { return { value: undefined, done: !0 }; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), defineProperty(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) { var ctor = "function" == typeof genFun && genFun.constructor; return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name)); }, exports.mark = function (genFun) { return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun; }, exports.awrap = function (arg) { return { __await: arg }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () { return this; }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) { void 0 === PromiseImpl && (PromiseImpl = Promise); var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl); return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) { return result.done ? result.value : iter.next(); }); }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () { return this; }), define(Gp, "toString", function () { return "[object Generator]"; }), exports.keys = function (val) { var object = Object(val), keys = []; for (var key in object) keys.push(key); return keys.reverse(), function next() { for (; keys.length;) { var key = keys.pop(); if (key in object) return next.value = key, next.done = !1, next; } return next.done = !0, next; }; }, exports.values = values, Context.prototype = { constructor: Context, reset: function reset(skipTempReset) { if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined); }, stop: function stop() { this.done = !0; var rootRecord = this.tryEntries[0].completion; if ("throw" === rootRecord.type) throw rootRecord.arg; return this.rval; }, dispatchException: function dispatchException(exception) { if (this.done) throw exception; var context = this; function handle(loc, caught) { return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught; } for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i], record = entry.completion; if ("root" === entry.tryLoc) return handle("end"); if (entry.tryLoc <= this.prev) { var hasCatch = hasOwn.call(entry, "catchLoc"), hasFinally = hasOwn.call(entry, "finallyLoc"); if (hasCatch && hasFinally) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } else if (hasCatch) { if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0); } else { if (!hasFinally) throw new Error("try statement without catch or finally"); if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc); } } } }, abrupt: function abrupt(type, arg) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) { var finallyEntry = entry; break; } } finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null); var record = finallyEntry ? finallyEntry.completion : {}; return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record); }, complete: function complete(record, afterLoc) { if ("throw" === record.type) throw record.arg; return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel; }, finish: function finish(finallyLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel; } }, "catch": function _catch(tryLoc) { for (var i = this.tryEntries.length - 1; i >= 0; --i) { var entry = this.tryEntries[i]; if (entry.tryLoc === tryLoc) { var record = entry.completion; if ("throw" === record.type) { var thrown = record.arg; resetTryEntry(entry); } return thrown; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(iterable, resultName, nextLoc) { return this.delegate = { iterator: values(iterable), resultName: resultName, nextLoc: nextLoc }, "next" === this.method && (this.arg = undefined), ContinueSentinel; } }, exports; }
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+var _dirname = new _url.URL(".", import.meta.url).pathname;
+
+// Storage de Multer
+var storage = _multer["default"].diskStorage({
+  destination: function destination(req, file, cb) {
+    var _req$params = req.params,
+      typeUser = _req$params.typeUser,
+      codeUser = _req$params.codeUser,
+      typeFile = _req$params.typeFile;
+    var dir = _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile));
+    var exist = _fs["default"].existsSync(dir);
+    if (!exist) {
+      _fs["default"].mkdirSync(dir, {
+        recursive: true
+      });
+    }
+    cb(null, dir);
   },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+  filename: function filename(req, file, cb) {
+    var fileName = file.originalname;
+    cb(null, fileName);
   }
 });
-
-// Filtro para validar el campo esperado y el tipo de archivo
-const fileFilterSingle  = (req, file, cb) => {
-  CustomConsole({origin: 'fileFilterSingle', info: file})
-  // Validar que el campo del archivo sea del nombre esperado
-  if (file.fieldname !== 'image') { 
-    return cb(new Error('El campo del archivo no es válido.'), false);
-  }
-  // validar un campo especifico del formulario que sea requerido
-  // if (!req.body || !req.body.image) {
-  //   return cb(new Error('Campo de imagen no encontrado en la solicitud'));
-  // }
-  // if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-  //   return cb(new Error('Solo se aceptan imágenes'));
-  // }
-  cb(null, true);
-};
-
-
-const uploadSingle = multer({ storage: storageSingle, fileFilter: fileFilterSingle });
-
-// Configuración de Multer para múltiples archivos (Max. 5 archivos)
-const storageMultiple = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
+var upload = (0, _multer["default"])({
+  storage: storage
 });
-
-// Filtro para validar el campo esperado y el tipo de archivo
-const fileFilterMultiple = (req, file, cb) => {
-  CustomConsole({origin: 'fileFilterMultiple', info: file})
-  // Validar que el campo del archivo sea del nombre esperado
-  if (file.fieldname !== 'image') { 
-    return cb(new Error('El campo del archivo no es válido.'), false);
-  }
-  // if (!req.body || !req.body.image) {
-  //   return cb(new Error('No image field found in the request'));
-  // }
-  // if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-  //   return cb(new Error('Solo se aceptan imágenes'));
-  // }
-  cb(null, true);
-};
-
-const uploadMultiple = multer({
-  storage: storageMultiple,
-  fileFilter: fileFilterMultiple,
-  limits: { files: 5 },
-});
-
-const { verify, sign } = jwtoken;
-
-const app = express();
-
-app.use(cors());
+var app = (0, _express["default"])();
 
 // Middleware para analizar el cuerpo de la solicitud
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-
-
-// middleware para verificar el token de acceso
-function verifyToken(req, res, next) {
-  // obtener el token de acceso de la cabecera de autorización
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-
-  // si no hay token, responder con un error 401
-  if (!token) {
-    return res.status(401).json({ message: 'No se proporcionó un token de acceso.' });
-  }
-
-  // verificar y decodificar el token de acceso
-  verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ message: 'El token de acceso es inválido.' });
-    }
-
-    // si el token es válido, agregar el objeto decodificado a la solicitud
-    req.user = decoded;
-
-    // continuar con la siguiente función de middleware
-    next();
-  });
-}
-
-// ruta de autenticación para generar un token de acceso
-app.post('/api/auth', (req, res) => {
-  const { username, password } = req.body;
-  console.log('QUE LLEGA ',username, password)
-  // validar los detalles de autenticación del usuario
-  // ...
-
-  // si la autenticación es exitosa, generar un token de acceso
-  const token = sign({ username, password }, process.env.JWT_SECRET);
-
-  // enviar el token de acceso al cliente
-  res.json({ token });
-});
-
-// ruta para subir una imagen y guardarla en tres tamaños diferentes
-app.post('/api/images/single', verifyToken, uploadSingle.single('image'), async (req, res) => {
+app.use(_bodyParser["default"].json());
+app.use(_bodyParser["default"].urlencoded({
+  extended: true
+}));
+app.post("/api/upload/:typeUser/:codeUser/:typeFile", upload.single("file"), function (req, res) {
+  var file = req.file;
   // Verificar si se ha enviado un archivo
   if (!req.file) {
-    return res.status(400).send('No se ha enviado un archivo.');
+    return res.status(400).end("No se ha enviado un archivo.");
   }
-
-  // Procesar archivo y crear versiones en diferentes tamaños
-  const { filename } = req.file;
-
-  try {
-    // crear la imagen original
-    await sharp(req.file.path)
-      .jpeg({ quality: 80 })
-      .toFile(`uploads/${filename}-original.jpg`);
-
-    // crear la imagen de tamaño mediano
-    await sharp(req.file.path)
-      .resize({ width: 640 })
-      .jpeg({ quality: 80 })
-      .toFile(`uploads/${filename}-medium.jpg`);
-
-    // crear la imagen de tamaño thumbnail
-    await sharp(req.file.path)
-      .resize({ width: 160 })
-      .jpeg({ quality: 80 })
-      .toFile(`uploads/${filename}-thumb.jpg`);
-
-    // responder con un mensaje de éxito
-    res.json({ message: 'La imagen se ha subido y procesado correctamente.', filename: filename });
-  } catch (err) {
-    // responder con un error si ocurre algún problema
-    console.error(err);
-    res.status(500).json({ message: 'Ocurrió un error al procesar la imagen.' });
-  }
-
-  // eliminar el archivo subido
-  fs.unlinkSync(req.file.path);
+  // Archivo guardado en folder según params
+  //enviar los nombres en respuesta
+  //retornar el nombre del archivo para guardar en la base de datos
+  res.status(200).end(file);
 });
-
-// ruta para subir multiples imagenes y guardarla en tres tamaños diferentes (Max. 5 Archivos)
-app.post('/api/images/multiple', verifyToken, uploadMultiple.array('image', 5), async (req, res) => {
-  // Verificar si se ha enviado algún archivo
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).send('No se han enviado archivos.');
-  }
-
-  // Procesar archivos y crear versiones en diferentes tamaños
-  const filenames = req.files.map(file => file.filename);
-
-  try {
-    for (const file of req.files) {
-      // crear la imagen original
-      await sharp(file.path)
-        .jpeg({ quality: 80 })
-        .toFile(`uploads/${file.filename}-original.jpg`);
-
-      // crear la imagen de tamaño mediano
-      await sharp(file.path)
-        .resize({ width: 640 })
-        .jpeg({ quality: 80 })
-        .toFile(`uploads/${file.filename}-medium.jpg`);
-
-      // crear la imagen de tamaño thumbnail
-      await sharp(file.path)
-        .resize({ width: 160 })
-        .jpeg({ quality: 80 })
-        .toFile(`uploads/${file.filename}-thumb.jpg`);
-
-      // eliminar el archivo subido
-      fs.unlinkSync(file.path);
+app["delete"]("/api/delete/:typeUser/:codeUser/:typeFile/:id", function (req, res, next) {
+  var _req$params2 = req.params,
+    typeUser = _req$params2.typeUser,
+    codeUser = _req$params2.codeUser,
+    typeFile = _req$params2.typeFile,
+    id = _req$params2.id;
+  var filePath = _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(id));
+  _fs["default"].unlink(filePath, function (err) {
+    if (err) {
+      // manejar el error
+      res.status(500).end(err);
+      return false;
     }
-
-    // responder con un mensaje de éxito
-    res.json({ message: 'Las imágenes se han subido y procesado correctamente.', filenames: filenames });
-  } catch (err) {
-    // responder con un error si ocurre algún problema
-    console.error(err);
-    res.status(500).json({ message: 'Ocurrió un error al procesar las imágenes.' });
-  }
+    res.end("Archivo eliminado");
+  });
 });
-
 
 // ruta para obtener una imagen en un tamaño específico
-app.get('/api/images/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-  const { size } = req.query;
+app.get("/api/files/:typeUser/:codeUser/:typeFile/:id", /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
+    var _req$params3, typeUser, codeUser, typeFile, id, _req$query$size, size, sizes, filePath, file;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _req$params3 = req.params, typeUser = _req$params3.typeUser, codeUser = _req$params3.codeUser, typeFile = _req$params3.typeFile, id = _req$params3.id;
+          _req$query$size = req.query.size, size = _req$query$size === void 0 ? "original" : _req$query$size; // verificar que el tamaño solicitado sea uno de los tamaños válidos
+          sizes = ["original", "medium", "thumb"];
+          if (sizes.includes(size)) {
+            _context.next = 5;
+            break;
+          }
+          return _context.abrupt("return", res.status(400).json({
+            message: "El tamaño solicitado no es válido."
+          }));
+        case 5:
+          try {
+            // leer la imagen del tamaño solicitado
+            filePath = _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(id));
+            file = _fs["default"].readFileSync(filePath); //PRIORITARIO validar el tipo de archivo para codificar el res con el tipo de archivo
+            // enviar la imagen como respuesta
+            //res.contentType("image/jpeg")
+            res.end(file, "binary");
+          } catch (err) {
+            // responder con un error si la imagen no existe
+            console.error(err);
+            res.status(404).json({
+              message: "La imagen solicitada no existe."
+            });
+          }
+        case 6:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return function (_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}());
 
-  // verificar que el tamaño solicitado sea uno de los tamaños válidos
-  const sizes = ['original', 'medium', 'thumb'];
-  if (!sizes.includes(size)) {
-    return res.status(400).json({ message: 'El tamaño solicitado no es válido.' });
-  }
-
-  try {
-    // leer la imagen del tamaño solicitado
-    const imagePath = `uploads/${id}-${size}.jpg`;
-    const image = fs.readFileSync(imagePath);
-
-    // enviar la imagen como respuesta
-    res.contentType('image/jpeg');
-    res.end(image, 'binary');
-  } catch (err) {
-    // responder con un error si la imagen no existe
-    console.error(err);
-    res.status(404).json({ message: 'La imagen solicitada no existe.' });
-  }
+// Ruta de ejemplo
+app.post("/api/upload/avatar", upload.single("image"), function (req, res) {
+  // Archivo guardado en folder según body
+  res.status(200).json("fino");
 });
 
 // verificación de ruta no encontrada
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'Ruta no encontrada' });
+app.use(function (req, res, next) {
+  res.status(404).json({
+    message: "Ruta no encontrada"
+  });
 });
-
-// iniciar el servidor
-app.listen(3000, () => {
-  console.log('Servidor iniciado en el puerto 3000.');
+app.listen(2000, function () {
+  console.log("Servidor iniciado en el puerto 2000.");
 });
-
