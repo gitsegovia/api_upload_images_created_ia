@@ -1,3 +1,4 @@
+import "dotenv/config"
 import express from "express"
 import path from "path"
 import bodyParser from "body-parser"
@@ -6,6 +7,7 @@ import fs from "fs"
 import { URL } from "url"
 import cors from "cors"
 
+const PORT = process.env.PORT || 2000
 const __dirname = new URL(".", import.meta.url).pathname
 
 // Storage de Multer
@@ -44,28 +46,27 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.post("/api/upload/:typeUser/:codeUser/:typeFile", upload.single("file"), (req, res) => {
     const file = req.file
     // Verificar si se ha enviado un archivo
-    if (!req.file) {
-        return res.status(400).end("No se ha enviado un archivo.")
+    if (!file) {
+        return res.status(400).send("No se ha enviado un archivo.")
     }
     // Archivo guardado en folder según params
     //enviar los nombres en respuesta
     //retornar el nombre del archivo para guardar en la base de datos
-    res.status(200).end(file)
+    res.status(200).send(file)
 })
 
 app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:id", (req, res, next) => {
     const { typeUser, codeUser, typeFile, id } = req.params
     const filePath = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
 
-    fs.unlink(filePath, (err) => {
+    http: fs.unlink(filePath, (err) => {
         if (err) {
             // manejar el error
-            console.log(err)
-            res.status(204).end("Archivo no encontrado")
+            res.status(404).json({ message: "Archivo no encontrado" })
             return false
         }
 
-        res.end("Archivo eliminado")
+        res.json({ message: "Archivo eliminado" })
     })
 })
 
@@ -87,7 +88,7 @@ app.get("/api/files/:typeUser/:codeUser/:typeFile/:id", async (req, res) => {
         //PRIORITARIO validar el tipo de archivo para codificar el res con el tipo de archivo
         // enviar la imagen como respuesta
         //res.contentType("image/jpeg")
-        res.end(file, "binary")
+        res.send(file)
     } catch (err) {
         // responder con un error si la imagen no existe
         console.error(err)
@@ -106,6 +107,6 @@ app.use((req, res, next) => {
     res.status(404).json({ message: "Ruta no encontrada" })
 })
 
-app.listen(2000, () => {
-    console.log("Servidor iniciado en el puerto 2000.")
+app.listen(PORT, () => {
+    console.log(`Servidor iniciado en el puerto ${PORT}.`)
 })
