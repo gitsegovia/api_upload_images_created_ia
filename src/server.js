@@ -71,7 +71,7 @@ app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:id", (req, res, next) => 
 })
 
 // ruta para obtener una imagen en un tamaño específico
-app.get("/api/files/:typeUser/:codeUser/:typeFile/:id", async (req, res) => {
+app.get("/api/files/:typeUser/:codeUser/:typeFile/:id/:name?", async (req, res) => {
     const { typeUser, codeUser, typeFile, id } = req.params
     const { size = "original" } = req.query
 
