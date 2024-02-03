@@ -13,8 +13,9 @@ const __dirname = new URL(".", import.meta.url).pathname
 // Storage de Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const { typeUser, codeUser, typeFile } = req.params
-        const dir = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}`)
+        const { typeUser, codeUser, typeFile, subFolder } = req.params
+        const dir =
+            subFolder && subFolder !== "" ? path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}`) : path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}`)
         const exist = fs.existsSync(dir)
         if (!exist) {
             fs.mkdirSync(dir, { recursive: true })
@@ -43,7 +44,7 @@ app.use(
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.post("/api/upload/:typeUser/:codeUser/:typeFile", upload.single("file"), (req, res) => {
+app.post("/api/upload/:typeUser/:codeUser/:typeFile/:subFolder?", upload.single("file"), (req, res) => {
     const file = req.file
     // Verificar si se ha enviado un archivo
     if (!file) {
@@ -55,9 +56,13 @@ app.post("/api/upload/:typeUser/:codeUser/:typeFile", upload.single("file"), (re
     res.status(200).send(file)
 })
 
-app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:id", (req, res, next) => {
-    const { typeUser, codeUser, typeFile, id } = req.params
-    const filePath = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
+app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", (req, res, next) => {
+    const { typeUser, codeUser, typeFile, subFolder, id } = req.params
+
+    const filePath =
+        subFolder && subFolder !== ""
+            ? path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}/${id}`)
+            : path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
 
     http: fs.unlink(filePath, (err) => {
         if (err) {
@@ -71,8 +76,8 @@ app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:id", (req, res, next) => 
 })
 
 // ruta para obtener una imagen en un tamaño específico
-app.get("/api/files/:typeUser/:codeUser/:typeFile/:id/:name?", async (req, res) => {
-    const { typeUser, codeUser, typeFile, id } = req.params
+app.get("/api/files/:typeUser/:codeUser/:typeFile/:subFolder?/:id/:name?", async (req, res) => {
+    const { typeUser, codeUser, typeFile, subFolder, id } = req.params
     const { size = "original" } = req.query
 
     // verificar que el tamaño solicitado sea uno de los tamaños válidos
@@ -83,7 +88,10 @@ app.get("/api/files/:typeUser/:codeUser/:typeFile/:id/:name?", async (req, res) 
 
     try {
         // leer la imagen del tamaño solicitado
-        const filePath = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
+        const filePath =
+            subFolder && subFolder !== ""
+                ? path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}/${id}`)
+                : path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
         const file = fs.readFileSync(filePath)
         //PRIORITARIO validar el tipo de archivo para codificar el res con el tipo de archivo
         // enviar la imagen como respuesta
