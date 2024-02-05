@@ -22,8 +22,9 @@ var storage = _multer["default"].diskStorage({
     var _req$params = req.params,
       typeUser = _req$params.typeUser,
       codeUser = _req$params.codeUser,
-      typeFile = _req$params.typeFile;
-    var dir = _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile));
+      typeFile = _req$params.typeFile,
+      subFolder = _req$params.subFolder;
+    var dir = subFolder && subFolder !== "" ? _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(subFolder)) : _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile));
     var exist = _fs["default"].existsSync(dir);
     if (!exist) {
       _fs["default"].mkdirSync(dir, {
@@ -53,7 +54,7 @@ app.use(_bodyParser["default"].json());
 app.use(_bodyParser["default"].urlencoded({
   extended: true
 }));
-app.post("/api/upload/:typeUser/:codeUser/:typeFile", upload.single("file"), function (req, res) {
+app.post("/api/upload/:typeUser/:codeUser/:typeFile/:subFolder?", upload.single("file"), function (req, res) {
   var file = req.file;
   // Verificar si se ha enviado un archivo
   if (!file) {
@@ -64,13 +65,14 @@ app.post("/api/upload/:typeUser/:codeUser/:typeFile", upload.single("file"), fun
   //retornar el nombre del archivo para guardar en la base de datos
   res.status(200).send(file);
 });
-app["delete"]("/api/delete/:typeUser/:codeUser/:typeFile/:id", function (req, res, next) {
+app["delete"]("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", function (req, res, next) {
   var _req$params2 = req.params,
     typeUser = _req$params2.typeUser,
     codeUser = _req$params2.codeUser,
     typeFile = _req$params2.typeFile,
+    subFolder = _req$params2.subFolder,
     id = _req$params2.id;
-  var filePath = _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(id));
+  var filePath = subFolder && subFolder !== "" ? _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(subFolder, "/").concat(id)) : _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(id));
   http: _fs["default"].unlink(filePath, function (err) {
     if (err) {
       // manejar el error
@@ -86,13 +88,13 @@ app["delete"]("/api/delete/:typeUser/:codeUser/:typeFile/:id", function (req, re
 });
 
 // ruta para obtener una imagen en un tamaño específico
-app.get("/api/files/:typeUser/:codeUser/:typeFile/:id/:name?", /*#__PURE__*/function () {
+app.get("/api/files/:typeUser/:codeUser/:typeFile/:subFolder?/:id/:name?", /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var _req$params3, typeUser, codeUser, typeFile, id, _req$query$size, size, sizes, filePath, file;
+    var _req$params3, typeUser, codeUser, typeFile, subFolder, id, _req$query$size, size, sizes, filePath, file;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
-          _req$params3 = req.params, typeUser = _req$params3.typeUser, codeUser = _req$params3.codeUser, typeFile = _req$params3.typeFile, id = _req$params3.id;
+          _req$params3 = req.params, typeUser = _req$params3.typeUser, codeUser = _req$params3.codeUser, typeFile = _req$params3.typeFile, subFolder = _req$params3.subFolder, id = _req$params3.id;
           _req$query$size = req.query.size, size = _req$query$size === void 0 ? "original" : _req$query$size; // verificar que el tamaño solicitado sea uno de los tamaños válidos
           sizes = ["original", "medium", "thumb"];
           if (sizes.includes(size)) {
@@ -105,7 +107,7 @@ app.get("/api/files/:typeUser/:codeUser/:typeFile/:id/:name?", /*#__PURE__*/func
         case 5:
           try {
             // leer la imagen del tamaño solicitado
-            filePath = _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(id));
+            filePath = subFolder && subFolder !== "" ? _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(subFolder, "/").concat(id)) : _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(id));
             file = _fs["default"].readFileSync(filePath); //PRIORITARIO validar el tipo de archivo para codificar el res con el tipo de archivo
             // enviar la imagen como respuesta
             //res.contentType("image/jpeg")
