@@ -94,9 +94,8 @@ var verify = _jsonwebtoken["default"].verify,
   sign = _jsonwebtoken["default"].sign;
 var app = (0, _express["default"])();
 app.use((0, _cors["default"])());
-
 // Middleware para analizar el cuerpo de la solicitud
-app.use(_bodyParser["default"].json());
+http: app.use(_bodyParser["default"].json());
 app.use(_bodyParser["default"].urlencoded({
   extended: true
 }));

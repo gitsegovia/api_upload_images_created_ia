@@ -76,9 +76,8 @@ const { verify, sign } = jwtoken
 const app = express()
 
 app.use(cors())
-
 // Middleware para analizar el cuerpo de la solicitud
-app.use(bodyParser.json())
+http: app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 // middleware para verificar el token de acceso
