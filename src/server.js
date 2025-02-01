@@ -67,6 +67,7 @@ app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", (req, re
     http: fs.unlink(filePath, (err) => {
         if (err) {
             // manejar el error
+            console.error(err)
             res.status(404).json({ message: "Archivo no encontrado" })
             return false
         }
