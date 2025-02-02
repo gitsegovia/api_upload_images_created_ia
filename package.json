@@ -3,13 +3,11 @@
     "version": "1.0.0",
     "description": "API para almacenar y mostrar imágenes",
     "type": "module",
-    "main": "dist/server.js",
+    "main": "src/server.js",
     "scripts": {
         "start": "node dist/server.js",
         "dev": "nodemon src/server.js",
-        "build": "babel src -d dist",
-        "prestart": "npm run build",
-        "predev": "npm run build"
+        "build": "babel src -d dist"
     },
     "keywords": [],
     "author": "Jose Segovia",
