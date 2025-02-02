@@ -8,6 +8,8 @@ yarn-error.log
 
 # Ignorar los archivos generados por la biblioteca sharp
 uploads/
+src/uploads/*
+dist/uploads/*
 logs/
 dist/logs
 src/logs
