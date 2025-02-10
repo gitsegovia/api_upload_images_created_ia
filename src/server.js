@@ -75,6 +75,37 @@ app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", (req, re
     })
 })
 
+app.post("/api/duplicate/:typeUser/:codeUser/:typeFile/:subFolder/:newSubFolder", (req, res) => {
+    const { typeUser, codeUser, typeFile, subFolder, newSubFolder } = req.params
+
+    // Ruta del subfolder original
+    const sourceDir = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}`)
+
+    // Verificar si el subfolder original existe
+    if (!fs.existsSync(sourceDir)) {
+        return res.status(404).json({ message: "El subfolder no existe." })
+    }
+
+    // Crear un nuevo nombre para el subfolder duplicado (puedes personalizar esto)
+    const destinationDir = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${newSubFolder}`)
+
+    // Verificar si el nuevo subfolder ya existe
+    if (fs.existsSync(destinationDir)) {
+        return res.status(400).json({ message: "El subfolder duplicado ya existe." })
+    }
+
+    try {
+        // Copiar el contenido del subfolder original al nuevo subfolder
+        fs.cpSync(sourceDir, destinationDir, { recursive: true })
+
+        // Respuesta exitosa
+        res.status(200).json({ message: "Subfolder duplicado correctamente.", newSubFolder: newSubFolder })
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: "Error al duplicar el subfolder." })
+    }
+})
+
 // ruta para obtener una imagen en un tamaño específico
 app.get("/api/files/:typeUser/:codeUser/:typeFile/:subFolder?/:id/:name?", async (req, res) => {
     const { typeUser, codeUser, typeFile, subFolder, id } = req.params
@@ -87,6 +118,9 @@ app.get("/api/files/:typeUser/:codeUser/:typeFile/:subFolder?/:id/:name?", async
     }
 
     try {
+        if (id === "null" || id === null) {
+            return res.status(404).json({ message: "La imagen solicitada no existe." })
+        }
         // leer la imagen del tamaño solicitado
         const filePath =
             subFolder && subFolder !== ""
