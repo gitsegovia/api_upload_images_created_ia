@@ -55,6 +55,25 @@ app.post("/api/upload/:typeUser/:codeUser/:typeFile/:subFolder?", upload.single(
     res.status(200).send(file)
 })
 
+// Ruta para subir múltiples archivos
+app.post("/api/uploads/:typeUser/:codeUser/:typeFile/:subFolder?", upload.array("files", 10), (req, res) => {
+    const files = req.files // Array de archivos subidos
+
+    // Verificar si se han enviado archivos
+    if (!files || files.length === 0) {
+        return res.status(400).send("No se han enviado archivos.")
+    }
+
+    // Si hay más de 10 archivos, devolver un error
+    if (files.length > 10) {
+        return res.status(400).send("El número máximo de archivos permitidos es 10.")
+    }
+
+    // Enviar los nombres de los archivos como respuesta
+    const fileNames = files.map((file) => file.filename)
+    res.status(200).json({ message: "Archivos subidos correctamente", files: fileNames })
+})
+
 app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", (req, res, next) => {
     const { typeUser, codeUser, typeFile, subFolder, id } = req.params
 
