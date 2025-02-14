@@ -64,6 +64,30 @@ app.post("/api/upload/:typeUser/:codeUser/:typeFile/:subFolder?", upload.single(
   //retornar el nombre del archivo para guardar en la base de datos
   res.status(200).send(file);
 });
+
+// Ruta para subir múltiples archivos
+app.post("/api/uploads/:typeUser/:codeUser/:typeFile/:subFolder?", upload.array("files", 10), function (req, res) {
+  var files = req.files; // Array de archivos subidos
+
+  // Verificar si se han enviado archivos
+  if (!files || files.length === 0) {
+    return res.status(400).send("No se han enviado archivos.");
+  }
+
+  // Si hay más de 10 archivos, devolver un error
+  if (files.length > 10) {
+    return res.status(400).send("El número máximo de archivos permitidos es 10.");
+  }
+
+  // Enviar los nombres de los archivos como respuesta
+  var fileNames = files.map(function (file) {
+    return file.filename;
+  });
+  res.status(200).json({
+    message: "Archivos subidos correctamente",
+    files: fileNames
+  });
+});
 app["delete"]("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", function (req, res, next) {
   var _req$params2 = req.params,
     typeUser = _req$params2.typeUser,
@@ -86,15 +110,60 @@ app["delete"]("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", funct
     });
   });
 });
+app.post("/api/duplicate/:typeUser/:codeUser/:typeFile/:subFolder/:newSubFolder", function (req, res) {
+  var _req$params3 = req.params,
+    typeUser = _req$params3.typeUser,
+    codeUser = _req$params3.codeUser,
+    typeFile = _req$params3.typeFile,
+    subFolder = _req$params3.subFolder,
+    newSubFolder = _req$params3.newSubFolder;
+
+  // Ruta del subfolder original
+  var sourceDir = _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(subFolder));
+
+  // Verificar si el subfolder original existe
+  if (!_fs["default"].existsSync(sourceDir)) {
+    return res.status(404).json({
+      message: "El subfolder no existe."
+    });
+  }
+
+  // Crear un nuevo nombre para el subfolder duplicado (puedes personalizar esto)
+  var destinationDir = _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(newSubFolder));
+
+  // Verificar si el nuevo subfolder ya existe
+  if (_fs["default"].existsSync(destinationDir)) {
+    return res.status(400).json({
+      message: "El subfolder duplicado ya existe."
+    });
+  }
+  try {
+    // Copiar el contenido del subfolder original al nuevo subfolder
+    _fs["default"].cpSync(sourceDir, destinationDir, {
+      recursive: true
+    });
+
+    // Respuesta exitosa
+    res.status(200).json({
+      message: "Subfolder duplicado correctamente.",
+      newSubFolder: newSubFolder
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error al duplicar el subfolder."
+    });
+  }
+});
 
 // ruta para obtener una imagen en un tamaño específico
 app.get("/api/files/:typeUser/:codeUser/:typeFile/:subFolder?/:id/:name?", /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var _req$params3, typeUser, codeUser, typeFile, subFolder, id, _req$query$size, size, sizes, filePath, file;
+    var _req$params4, typeUser, codeUser, typeFile, subFolder, id, _req$query$size, size, sizes, filePath, file;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
-          _req$params3 = req.params, typeUser = _req$params3.typeUser, codeUser = _req$params3.codeUser, typeFile = _req$params3.typeFile, subFolder = _req$params3.subFolder, id = _req$params3.id;
+          _req$params4 = req.params, typeUser = _req$params4.typeUser, codeUser = _req$params4.codeUser, typeFile = _req$params4.typeFile, subFolder = _req$params4.subFolder, id = _req$params4.id;
           _req$query$size = req.query.size, size = _req$query$size === void 0 ? "original" : _req$query$size; // verificar que el tamaño solicitado sea uno de los tamaños válidos
           sizes = ["original", "medium", "thumb"];
           if (sizes.includes(size)) {
@@ -105,25 +174,36 @@ app.get("/api/files/:typeUser/:codeUser/:typeFile/:subFolder?/:id/:name?", /*#__
             message: "El tamaño solicitado no es válido."
           }));
         case 5:
-          try {
-            // leer la imagen del tamaño solicitado
-            filePath = subFolder && subFolder !== "" ? _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(subFolder, "/").concat(id)) : _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(id));
-            file = _fs["default"].readFileSync(filePath); //PRIORITARIO validar el tipo de archivo para codificar el res con el tipo de archivo
-            // enviar la imagen como respuesta
-            //res.contentType("image/jpeg")
-            res.send(file);
-          } catch (err) {
-            // responder con un error si la imagen no existe
-            console.error(err);
-            res.status(404).json({
-              message: "La imagen solicitada no existe."
-            });
+          _context.prev = 5;
+          if (!(id === "null" || id === null)) {
+            _context.next = 8;
+            break;
           }
-        case 6:
+          return _context.abrupt("return", res.status(404).json({
+            message: "La imagen solicitada no existe."
+          }));
+        case 8:
+          // leer la imagen del tamaño solicitado
+          filePath = subFolder && subFolder !== "" ? _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(subFolder, "/").concat(id)) : _path["default"].join(_dirname, "uploads/".concat(typeUser, "/").concat(codeUser, "/").concat(typeFile, "/").concat(id));
+          file = _fs["default"].readFileSync(filePath); //PRIORITARIO validar el tipo de archivo para codificar el res con el tipo de archivo
+          // enviar la imagen como respuesta
+          //res.contentType("image/jpeg")
+          res.send(file);
+          _context.next = 17;
+          break;
+        case 13:
+          _context.prev = 13;
+          _context.t0 = _context["catch"](5);
+          // responder con un error si la imagen no existe
+          console.error(_context.t0);
+          res.status(404).json({
+            message: "La imagen solicitada no existe."
+          });
+        case 17:
         case "end":
           return _context.stop();
       }
-    }, _callee);
+    }, _callee, null, [[5, 13]]);
   }));
   return function (_x, _x2) {
     return _ref.apply(this, arguments);
