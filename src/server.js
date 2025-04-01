@@ -74,6 +74,7 @@ app.post("/api/uploads/:typeUser/:codeUser/:typeFile/:subFolder?", upload.array(
     res.status(200).json({ message: "Archivos subidos correctamente", files: fileNames })
 })
 
+// Ruta para borrar imagen especifica
 app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", (req, res, next) => {
     const { typeUser, codeUser, typeFile, subFolder, id } = req.params
 
@@ -82,7 +83,7 @@ app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", (req, re
             ? path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}/${id}`)
             : path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
 
-    http: fs.unlink(filePath, (err) => {
+    fs.unlink(filePath, (err) => {
         if (err) {
             // manejar el error
             console.error(err)
@@ -94,6 +95,25 @@ app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", (req, re
     })
 })
 
+// Ruta para borrar carpeta
+app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder", (req, res, next) => {
+    const { typeUser, codeUser, typeFile, subFolder } = req.params
+
+    const folderPath = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}`)
+
+    fs.rm(folderPath, { recursive: true }, (err) => {
+        if (err) {
+            // manejar el error
+            console.error(err)
+            res.status(404).json({ message: "Carpeta no encontrada" })
+            return false
+        }
+
+        res.json({ message: "Carpeta eliminada" })
+    })
+})
+
+// Ruta para duplicar carpeta
 app.post("/api/duplicate/:typeUser/:codeUser/:typeFile/:subFolder/:newSubFolder", (req, res) => {
     const { typeUser, codeUser, typeFile, subFolder, newSubFolder } = req.params
 
