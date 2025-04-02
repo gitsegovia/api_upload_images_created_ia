@@ -2,7 +2,7 @@ import express from "express"
 import path from "path"
 import bodyParser from "body-parser"
 import multer from "multer"
-import fs from "fs"
+import { unlink, mkdirSync, existsSync, rm, cpSync, readFileSync } from "node:fs"
 import { URL } from "url"
 import cors from "cors"
 
@@ -15,9 +15,9 @@ const storage = multer.diskStorage({
         const { typeUser, codeUser, typeFile, subFolder } = req.params
         const dir =
             subFolder && subFolder !== "" ? path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}`) : path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}`)
-        const exist = fs.existsSync(dir)
+        const exist = existsSync(dir)
         if (!exist) {
-            fs.mkdirSync(dir, { recursive: true })
+            mkdirSync(dir, { recursive: true })
         }
         cb(null, dir)
     },
@@ -83,7 +83,7 @@ app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder?/:id", (req, re
             ? path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}/${id}`)
             : path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
 
-    fs.unlink(filePath, (err) => {
+    unlink(filePath, (err) => {
         if (err) {
             // manejar el error
             console.error(err)
@@ -101,7 +101,7 @@ app.delete("/api/delete/:typeUser/:codeUser/:typeFile/:subFolder", (req, res, ne
 
     const folderPath = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}`)
 
-    fs.rm(folderPath, { recursive: true }, (err) => {
+    rm(folderPath, { recursive: true }, (err) => {
         if (err) {
             // manejar el error
             console.error(err)
@@ -121,7 +121,7 @@ app.post("/api/duplicate/:typeUser/:codeUser/:typeFile/:subFolder/:newSubFolder"
     const sourceDir = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}`)
 
     // Verificar si el subfolder original existe
-    if (!fs.existsSync(sourceDir)) {
+    if (!existsSync(sourceDir)) {
         return res.status(404).json({ message: "El subfolder no existe." })
     }
 
@@ -129,13 +129,13 @@ app.post("/api/duplicate/:typeUser/:codeUser/:typeFile/:subFolder/:newSubFolder"
     const destinationDir = path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${newSubFolder}`)
 
     // Verificar si el nuevo subfolder ya existe
-    if (fs.existsSync(destinationDir)) {
+    if (existsSync(destinationDir)) {
         return res.status(400).json({ message: "El subfolder duplicado ya existe." })
     }
 
     try {
         // Copiar el contenido del subfolder original al nuevo subfolder
-        fs.cpSync(sourceDir, destinationDir, { recursive: true })
+        cpSync(sourceDir, destinationDir, { recursive: true })
 
         // Respuesta exitosa
         res.status(200).json({ message: "Subfolder duplicado correctamente.", newSubFolder: newSubFolder })
@@ -165,7 +165,7 @@ app.get("/api/files/:typeUser/:codeUser/:typeFile/:subFolder?/:id/:name?", async
             subFolder && subFolder !== ""
                 ? path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}/${id}`)
                 : path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
-        const file = fs.readFileSync(filePath)
+        const file = readFileSync(filePath)
         //PRIORITARIO validar el tipo de archivo para codificar el res con el tipo de archivo
         // enviar la imagen como respuesta
         //res.contentType("image/jpeg")
