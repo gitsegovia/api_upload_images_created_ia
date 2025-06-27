@@ -166,10 +166,33 @@ app.get("/api/files/:typeUser/:codeUser/:typeFile/:subFolder?/:id/:name?", async
             subFolder && subFolder !== ""
                 ? path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${subFolder}/${id}`)
                 : path.join(__dirname, `uploads/${typeUser}/${codeUser}/${typeFile}/${id}`)
+
+        // Determine content type based on file extension
+        const ext = path.extname(id).toLowerCase()
+        let contentType = "application/octet-stream" // Default to a generic binary file
+
+        switch (ext) {
+            case ".jpg":
+            case ".jpeg":
+                contentType = "image/jpeg"
+                break
+            case ".png":
+                contentType = "image/png"
+                break
+            case ".gif":
+                contentType = "image/gif"
+                break
+            case ".webp":
+                contentType = "image/webp"
+                break
+            // Add more image types as needed
+        }
+
         const file = readFileSync(filePath)
-        //PRIORITARIO validar el tipo de archivo para codificar el res con el tipo de archivo
-        // enviar la imagen como respuesta
-        //res.contentType("image/jpeg")
+
+        // Set the Content-Type header
+        res.contentType(contentType)
+        // send the image as response
         res.send(file)
     } catch (err) {
         // responder con un error si la imagen no existe
